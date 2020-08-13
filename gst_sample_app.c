@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
     g_object_set (data.playbin, "uri", urlList[data.i++], NULL);
 #else /* !CYCLE_URLS */
     /* Set the URI to play */
-    g_object_set (data.playbin, "uri", "https://www.freedesktop.org/software/gstreamer-sdk/data/media/sintel_trailer-480p.webm", NULL);
+    g_object_set (data.playbin, "uri", url, NULL);
 #endif /* !CYCLE_URLS */
 
     /* Start playing */
@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
                     /* Pause pipeline... */
                     ret = gst_element_set_state (data.playbin, GST_STATE_NULL);
                     if (ret == GST_STATE_CHANGE_FAILURE) {
-                        g_printerr ("Unable to set the pipeline to the paused state.\n");
+                        g_printerr ("Unable to set the pipeline to NULL state.\n");
                         data.terminate = TRUE;
                     } else {
                         if (!urlList[data.i]) {
@@ -167,10 +167,11 @@ int main(int argc, char *argv[])
                         }
                     }
 #else /* !CYCLE_URLS */
-                    g_print ("\nReached 10s, performing 10s forward seek...\n", );
-                    gst_element_seek_simple (data.playbin, GST_FORMAT_TIME,
-                            GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_KEY_UNIT, 30 * GST_SECOND);
-                    data.seek_done = TRUE;
+                    ret = gst_element_set_state (data.playbin, GST_STATE_NULL);
+                    if (ret == GST_STATE_CHANGE_FAILURE) {
+                        g_printerr ("Unable to set the pipeline to NULL state.\n");
+                    }
+                    data.terminate = TRUE;
 #endif /* !CYCLE_URLS */
                 }
             }

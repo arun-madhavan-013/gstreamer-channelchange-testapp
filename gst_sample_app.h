@@ -6,16 +6,15 @@
 #endif
 
 #ifdef CYCLE_URLS
-
 static char *urlList[] = {
-    "https://www.freedesktop.org/software/gstreamer-sdk/data/media/sintel_trailer-480p.webm",
     "http://devimages.apple.com/iphone/samples/bipbop/bipbopall.m3u8",
     "http://184.72.239.149/vod/smil:BigBuckBunny.smil/playlist.m3u8",
     /* Make sure that this table is ALWAYS NULL terminated. */
     NULL,
 };
-
-#endif /* CYCLE_URLS */
+#else /* !CYCLE_URLS */
+static char *url = "http://devimages.apple.com/iphone/samples/bipbop/bipbopall.m3u8";
+#endif /* !CYCLE_URLS */
 
 /* Structure to contain all our information, so we can pass it around */
 typedef struct _CustomData {
