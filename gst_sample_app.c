@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
                         GST_TIME_ARGS (current), GST_TIME_ARGS (data.duration));
                  */
                 /* If seeking is enabled, we have not done it yet, and the time is right, seek */
-                if (data.seek_enabled && !data.seek_done && current > 5 * GST_SECOND) {
+                if (data.seek_enabled && !data.seek_done && current > PLAY_DURATION_SEC * GST_SECOND) {
 #ifdef CYCLE_URLS
                     data.i = ((data.i >= URI_COUNT_MAX)? 0 : data.i);
                     g_print ("\nReached 10s, loading uri: '%s'...\n", urlList[data.i]);
