@@ -12,7 +12,8 @@ include(GNUInstallDirs)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 set(GSTAPP_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/gst_sample_app.c)
 
-add_definitions(-DCYCLE_URLS=1 -DPLAY_DURATION_SEC=5)
+add_definitions(-DCYCLE_URLS=1)
+add_definitions(-DPLAY_DURATION_SEC=5)
 
 add_executable(gstChannelChangeTestNativeApp ${GSTAPP_SRC_FILES})
 target_link_libraries(gstChannelChangeTestNativeApp PRIVATE

@@ -90,8 +90,8 @@ int main(int argc, char *argv[])
     }
 
 #ifdef CYCLE_URLS
-    /* Loop through the url list. */
-    data.i = ((data.i >= URI_COUNT_MAX)? 0 : data.i);
+    data.i = 0;
+    g_print("\nLoading initial uri: '%s'...\n", urlList[data.i]);
     /* Set the URI to play next index and increment the index to next stream url. */
     g_object_set (data.playbin, "uri", urlList[data.i++], NULL);
 #else /* !CYCLE_URLS */
@@ -139,16 +139,19 @@ int main(int argc, char *argv[])
                         GST_TIME_ARGS (current), GST_TIME_ARGS (data.duration));
                  */
                 /* If seeking is enabled, we have not done it yet, and the time is right, seek */
-                if (data.seek_enabled && !data.seek_done && current > PLAY_DURATION_SEC * GST_SECOND) {
+                if (data.seek_enabled && !data.seek_done && current > (PLAY_DURATION_SEC * GST_SECOND)) {
 #ifdef CYCLE_URLS
-                    data.i = ((data.i >= URI_COUNT_MAX)? 0 : data.i);
-                    g_print ("\nReached 10s, loading uri: '%s'...\n", urlList[data.i]);
                     /* Pause pipeline... */
                     ret = gst_element_set_state (data.playbin, GST_STATE_NULL);
                     if (ret == GST_STATE_CHANGE_FAILURE) {
                         g_printerr ("Unable to set the pipeline to the paused state.\n");
                         data.terminate = TRUE;
                     } else {
+                        if (!urlList[data.i]) {
+                            /* Array is NULL terminated; reset index. */
+                            data.i = 0;
+                        }
+                        g_print ("\nReached %ds, loading next uri: '%s'...\n", PLAY_DURATION_SEC, urlList[data.i]);
                         /* Set the URI to play next index and increment the index to next stream url. */
                         g_object_set (data.playbin, "uri", urlList[data.i++], NULL);
                         ret = gst_element_set_state (data.playbin, GST_STATE_PLAYING);

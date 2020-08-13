@@ -7,22 +7,12 @@
 
 #ifdef CYCLE_URLS
 
-#define URI_COUNT_MAX   5
-static char *urlList[URI_COUNT_MAX] = {
-    "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-    "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-    "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-    "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
-    "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
-    "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
-    "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
-    "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
-    "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4",
-    "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4",
-    "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
-    "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WhatCarCanYouGetForAGrand.mp4",
+static char *urlList[] = {
     "https://www.freedesktop.org/software/gstreamer-sdk/data/media/sintel_trailer-480p.webm",
+    "http://devimages.apple.com/iphone/samples/bipbop/bipbopall.m3u8",
+    "http://184.72.239.149/vod/smil:BigBuckBunny.smil/playlist.m3u8",
+    /* Make sure that this table is ALWAYS NULL terminated. */
+    NULL,
 };
 
 #endif /* CYCLE_URLS */
