@@ -16,8 +16,8 @@ Use `-DPLAY_DURATION_SEC=<seconds>` to configure the playback duration of a stre
 ```
 DESCRIPTION = "GStreamer channel change test application."
 SECTION = "Apps"
-LICENSE = "Apache 2.0"
-LIC_FILES_CHKSUM = "file://LICENSE;md5=726a766df559f36316aa5261724ee8cd"
+LICENSE = "Apache-2.0"
+LIC_FILES_CHKSUM = "file://LICENSE;md5=e23cb771753baa8f600785009ab29222"
 
 DEPENDS = "gstreamer1.0"
 
