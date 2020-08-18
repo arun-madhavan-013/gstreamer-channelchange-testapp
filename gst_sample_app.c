@@ -67,120 +67,96 @@ static void handle_message (CustomData *data, GstMessage *msg)
 
 int main(int argc, char *argv[])
 {
+    guint64 Counter = 0;
     CustomData data;
+    data.i = 0;
     GstBus *bus;
     GstMessage *msg;
     GstStateChangeReturn ret;
 
-    data.playing = FALSE;
-    data.terminate = FALSE;
-    data.seek_enabled = FALSE;
-    data.seek_done = FALSE;
-    data.duration = GST_CLOCK_TIME_NONE;
-
     /* Initialize GStreamer */
-    gst_init (&argc, &argv);
+    gst_init(&argc, &argv);
 
-    /* Create the elements */
-    data.playbin = gst_element_factory_make ("playbin", "playbin");
+    while (1) {
+        data.playing = FALSE;
+        data.terminate = FALSE;
+        data.seek_enabled = FALSE;
+        data.seek_done = FALSE;
+        data.duration = GST_CLOCK_TIME_NONE;
+        /* Create the elements */
+        data.playbin = gst_element_factory_make ("playbin", "playbin");
 
-    if (!data.playbin) {
-        g_printerr ("Not all elements could be created.\n");
-        return -1;
-    }
+        if (!data.playbin) {
+            g_printerr ("Not all elements could be created.\n");
+            return -1;
+        }
 
 #ifdef CYCLE_URLS
-    data.i = 0;
-    g_print("\nLoading initial uri: '%s'...\n", urlList[data.i]);
-    /* Set the URI to play next index and increment the index to next stream url. */
-    g_object_set (data.playbin, "uri", urlList[data.i++], NULL);
+        if (!urlList[data.i]) {
+            /* Array is NULL terminated; reset index. */
+            data.i = 0;
+        }
+        Counter++;
+        g_print("[%" G_GUINT64_FORMAT "] Loading initial uri: '%s'...\n", Counter, urlList[data.i]);
+        /* Set the URI to play next index and increment the index to next stream url. */
+        g_object_set(data.playbin, "uri", urlList[data.i++], NULL);
 #else /* !CYCLE_URLS */
-    /* Set the URI to play */
-    g_object_set (data.playbin, "uri", url, NULL);
+        /* Set the URI to play */
+        g_object_set(data.playbin, "uri", url, NULL);
 #endif /* !CYCLE_URLS */
 
-    /* Start playing */
-    ret = gst_element_set_state (data.playbin, GST_STATE_PLAYING);
-    if (ret == GST_STATE_CHANGE_FAILURE) {
-        g_printerr ("Unable to set the pipeline to the playing state.\n");
-        gst_object_unref (data.playbin);
-        return -1;
-    }
+        /* Start playing */
+        ret = gst_element_set_state(data.playbin, GST_STATE_PLAYING);
+        if (ret == GST_STATE_CHANGE_FAILURE) {
+            g_printerr ("Unable to set the pipeline to the playing state.\n");
+            gst_object_unref(data.playbin);
+            return -1;
+        }
 
-    /* Listen to the bus */
-    bus = gst_element_get_bus (data.playbin);
+        /* Listen to the bus */
+        bus = gst_element_get_bus(data.playbin);
 
-    do {
-        msg = gst_bus_timed_pop_filtered (bus, 100 * GST_MSECOND,
-                GST_MESSAGE_STATE_CHANGED | GST_MESSAGE_ERROR | GST_MESSAGE_EOS | GST_MESSAGE_DURATION);
+        do {
+            msg = gst_bus_timed_pop_filtered (bus, 100 * GST_MSECOND,
+                    GST_MESSAGE_STATE_CHANGED | GST_MESSAGE_ERROR | GST_MESSAGE_EOS | GST_MESSAGE_DURATION);
 
-        /* Parse message */
-        if (msg != NULL) {
-            handle_message (&data, msg);
-        } else {
-            /* We got no message, this means the timeout expired */
-            if (data.playing) {
-                gint64 current = -1;
+            /* Parse message */
+            if (msg != NULL) {
+                handle_message (&data, msg);
+            } else {
+                /* We got no message, this means the timeout expired */
+                if (data.playing) {
+                    gint64 current = -1;
 
-                /* Query the current position of the stream */
-                if (!gst_element_query_position (data.playbin, GST_FORMAT_TIME, &current)) {
-                    //g_printerr("Could not query current position.\n");
-                }
-
-                /* If we didn't know it yet, query the stream duration */
-                if (!GST_CLOCK_TIME_IS_VALID (data.duration)) {
-                    if (!gst_element_query_duration (data.playbin, GST_FORMAT_TIME, &data.duration)) {
-                        //g_printerr("Could not query current duration.\n");
+                    /* Query the current position of the stream */
+                    if (!gst_element_query_position (data.playbin, GST_FORMAT_TIME, &current)) {
+                        //g_printerr("Could not query current position.\n");
                     }
-                }
 
-                /* Print current position and total duration */
-                /* g_print ("Position %" GST_TIME_FORMAT " / %" GST_TIME_FORMAT "\r",
-                        GST_TIME_ARGS (current), GST_TIME_ARGS (data.duration));
-                 */
-                /* If seeking is enabled, we have not done it yet, and the time is right, seek */
-                if (data.seek_enabled && !data.seek_done && current > (PLAY_DURATION_SEC * GST_SECOND)) {
-#ifdef CYCLE_URLS
-                    /* Pause pipeline... */
-                    ret = gst_element_set_state (data.playbin, GST_STATE_NULL);
-                    if (ret == GST_STATE_CHANGE_FAILURE) {
-                        g_printerr ("Unable to set the pipeline to NULL state.\n");
+                    /* If we didn't know it yet, query the stream duration */
+                    if (!GST_CLOCK_TIME_IS_VALID (data.duration)) {
+                        if (!gst_element_query_duration (data.playbin, GST_FORMAT_TIME, &data.duration)) {
+                            //g_printerr("Could not query current duration.\n");
+                        }
+                    }
+
+                    /* Print current position and total duration */
+                    /* g_print ("Position %" GST_TIME_FORMAT " / %" GST_TIME_FORMAT "\r",
+                       GST_TIME_ARGS (current), GST_TIME_ARGS (data.duration));
+                     */
+                    /* If seeking is enabled, we have not done it yet, and the time is right, seek */
+                    if (data.seek_enabled && !data.seek_done && current > (PLAY_DURATION_SEC * GST_SECOND)) {
+                        g_print ("\n[%" G_GUINT64_FORMAT "]Reached %ds....\n", Counter, PLAY_DURATION_SEC);
                         data.terminate = TRUE;
-                    } else {
-                        if (!urlList[data.i]) {
-                            /* Array is NULL terminated; reset index. */
-                            data.i = 0;
-                        }
-                        g_print ("\nReached %ds, loading next uri: '%s'...\n", PLAY_DURATION_SEC, urlList[data.i]);
-                        /* Set the URI to play next index and increment the index to next stream url. */
-                        g_object_set (data.playbin, "uri", urlList[data.i++], NULL);
-                        ret = gst_element_set_state (data.playbin, GST_STATE_PLAYING);
-                        if (ret == GST_STATE_CHANGE_FAILURE) {
-                            g_printerr ("Unable to set the pipeline to the playing state.\n");
-                            data.terminate = TRUE;
-                        } else {
-                            data.playing = FALSE;
-                            data.terminate = FALSE;
-                            data.seek_enabled = FALSE;
-                            data.seek_done = FALSE;
-                            data.duration = GST_CLOCK_TIME_NONE;
-                        }
                     }
-#else /* !CYCLE_URLS */
-                    ret = gst_element_set_state (data.playbin, GST_STATE_NULL);
-                    if (ret == GST_STATE_CHANGE_FAILURE) {
-                        g_printerr ("Unable to set the pipeline to NULL state.\n");
-                    }
-                    data.terminate = TRUE;
-#endif /* !CYCLE_URLS */
                 }
             }
-        }
-    } while (!data.terminate);
+        } while (!data.terminate);
 
-    /* Free resources */
-    gst_object_unref (bus);
-    gst_element_set_state (data.playbin, GST_STATE_NULL);
-    gst_object_unref (data.playbin);
+        /* Free resources */
+        gst_object_unref(bus);
+        gst_element_set_state(data.playbin, GST_STATE_NULL);
+        gst_object_unref(data.playbin);
+    }
     return 0;
 }
